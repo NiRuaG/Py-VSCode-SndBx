@@ -34,7 +34,7 @@ class game_Topsoil():
         print(colo.Fore.BLACK + colo.Back.WHITE, end='') # default bg/fg colors -- eventually put this to a seperate output class/method for printing game
 
         self._garden = game_Topsoil.Garden(plants=list(in_garden[0]), soil=list(in_garden[1]))
-        
+
         #self._garden_areas = self._init_search_areas()
         self._timed_plants = []
 
@@ -127,10 +127,10 @@ class game_Topsoil():
             self._garden.plants[coord] = ' ' ### ? None ?
             self._garden.soil[coord] = next_soil
 
-        #find contigous area of plants at coord
-        #remove plants & cycle the soil under those plants
-        #score
-        pass 
+        # reduce timed TREES
+        for coord in self._timed_plants: 
+            # if timed down to 0, replace with TREE
+            self._garden.plants[coord] = int(self._garden.plants[coord])-1
 
         # Score
         if (match_plant in ('|', '*', 'w')):
