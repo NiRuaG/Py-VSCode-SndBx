@@ -12,7 +12,9 @@ colo.init()#autoreset=True)
 class game_Topsoil():
     Garden = namedtuple('Garden', 'plants soil')
     Harvest_Action = 'A'
-    soil_cycle = {
+    Basic_Plants = ('|','*','w')
+
+    _soil_cycle = {
         'y': 'g',
         'g': 'b',
         'b': 'y'
@@ -43,32 +45,6 @@ class game_Topsoil():
 
         self._future_que = list(in_future_queue)
         self._score = 0
-        
-
-    # def _init_search_areas(self):
-    #     ret = [None for _ in range(16)]
-    #     area_id = 0
-    #     for start_area_coord in range(16): 
-    #         if ret[start_area_coord]: continue # if not None, the coordinate has an assigned area
-
-    #         # start of a new component area 
-    #         area_id += 1
-            
-    #         #search for contiguous area that matches the soil color
-    #         match_soil = self._garden.soil[start_area_coord]
-            
-    #         dfs_stack = [start_area_coord]
-    #         visited = set()
-    #         while dfs_stack: 
-    #             cur_coord = dfs_stack.pop()
-    #             if ret[cur_coord] or cur_coord in visited: continue
-    #             visited.add(cur_coord)
-    #             if self._garden.soil[cur_coord] != match_soil: continue
-                
-    #             ret[cur_coord] = area_id
-    #             dfs_stack.extend(game_Topsoil._coord_neighbors[cur_coord])
-            
-    #     return ret
 
     def pprint(self, extras=False, post=''):
         print(self._score)
@@ -105,7 +81,7 @@ class game_Topsoil():
 
         #find contigous area that matches the soil color & plant
         area = []
-        match_soil = self._garden.soil[coord]
+        match_soil  = self._garden.soil[coord]
         match_plant = self._garden.plants[coord]
 
         dfs_stack = [coord]
@@ -122,21 +98,23 @@ class game_Topsoil():
             dfs_stack.extend(game_Topsoil._coord_neighbors[cur_coord])
 
         #'remove' plants & cycle the soil under those plants
-        next_soil = game_Topsoil.soil_cycle[match_soil]
+        next_soil = game_Topsoil._soil_cycle[match_soil]
         for coord in area:
             self._garden.plants[coord] = ' ' ### ? None ?
             self._garden.soil[coord] = next_soil
 
         # reduce timed TREES
         for coord in self._timed_plants: 
-            # if timed down to 0, replace with TREE
+            # if timed down to 0, replace with 
             self._garden.plants[coord] = int(self._garden.plants[coord])-1
 
         # Score
-        if (match_plant in ('|', '*', 'w')):
-            self._score += ( len(area) * (len(area)+1) ) // 2
-            #print(self._score)
-        ### |, * = 1 + 2 + 3 + ..
+        if (match_plant in game_Topsoil.Basic_Plants):
+            self._score += ( len(area) * (len(area)+1) ) // 2   # = 1 + 2 + 3 + .. + up to length (size of plant area)
+        #if (match_plant == '') #flower, pine, oak, mushroom
+
+            
+        ### |, * 
     
     # def _top_soil_at(self, coord):
     #     return self._garden.soil[coord]
