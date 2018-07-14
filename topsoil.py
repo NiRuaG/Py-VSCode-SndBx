@@ -1,7 +1,6 @@
 import random
-from collections import deque
-from collections import namedtuple
-from itertools import cycle
+from collections import deque, namedtuple
+from itertools import cycle, zip_longest
 import colorama as colo
 
 colo.init()#autoreset=True)
@@ -70,7 +69,7 @@ class game_Topsoil():
 
         self._timed_plant_coords = []
 
-        self._plant_queue = deque(in_cur_queue[:4])#, maxlen=4) doesn't seem necessary because we pop before adding - iow: it'll stay bounded to 4 anyway
+        self._plant_queue = deque(in_cur_queue[:3])
         self._plant_queue.append(game_Topsoil.Harvest_Action)
 
         self._future_que = list(in_future_queue)
@@ -175,7 +174,7 @@ g = game_Topsoil(
 
     in_cur_queue="|w|",
 
-    in_future_queue=("*w|**|*ww*|*||www*||ww||||3")
+    in_future_queue=("*w|**|*ww*|*||www*||ww||||Aw||@|w||ww*w*w*|w|@w*")
     )
 
 g.pprint(post='\n',extras=True)
@@ -188,5 +187,12 @@ g.action_at(
     4,5,12,2,
     8,13,11,11,
     3,7,9,7,
-    4,3,7,12)
+    4,3,7,12,
+    0,4,15,3,
+    5,8,9,5,
+    3,5,14,14,
+    12,13,1,15,
+    2,15,6,1,
+    11,6,10,10,
+    1,10,2,0)
 g.pprint()
