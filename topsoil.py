@@ -6,8 +6,13 @@ import colorama as colo
 
 colo.init()#autoreset=True)
 
-# class garden_obj():
-#     def __init__(self, type=):
+def group_every(n, iterable):
+    fill_sentinel = object()
+    args = [iter(iterable)] * n
+    for i in zip_longest(fillvalue=fill_sentinel, *args):
+        yield i if i[-1] is not fill_sentinel else tuple(v for v in i if v is not fill_sentinel)
+
+
 
 class game_Topsoil():
     Garden = namedtuple('Garden', 'plants soil')
