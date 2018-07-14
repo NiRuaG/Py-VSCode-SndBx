@@ -24,6 +24,26 @@ class game_Topsoil():
 
     Harvest_Action = 'V'
     Basic_Plants = ( '|', '*', 'w')
+    Timed_Plants = {
+        '@': 2, # flowers 
+        'A': 3, # pine ['Ѧ','Δ','Ʌ','ѧ']
+        'Y': 5, # oak 
+        'f': 3  # mushroom 
+    }
+    _score_mult = {
+        '|': 1,  # basic
+        '*': 1,  # basic
+        'w': 1,  # basic
+        '@': 3,  # flowers 
+        'A': 6,  # pine 
+        'Y': 15, # oak 
+        'f': 3   # mushroom
+    }
+    # flower[2], flower[1], flower[0], 
+    # oak[5], oak[4], oak[3], oak[2], oak[1] ♠ Ψ ♀
+    # mushroom[3], mr[2], mr[1], mr[0] ȶ ʈ
+    # ɷ ʬ ω ᵩ † ⱷ
+    
     _soil_cycle = {
         'y': 'g',
         'g': 'b',
@@ -48,8 +68,7 @@ class game_Topsoil():
         # ? TODO: starting garden has more complicated starting plots (with birds, with timers)
         self._garden = [game_Topsoil.Garden_Plot(plant=plant,soil=soil) for plant,soil in zip(in_garden[0],in_garden[1])]
 
-        #self._garden_areas = self._init_search_areas()
-        self._timed_plants = []
+        self._timed_plant_coords = []
 
         self._plant_queue = deque(in_cur_queue[:4])#, maxlen=4) doesn't seem necessary because we pop before adding - iow: it'll stay bounded to 4 anyway
         self._plant_queue.append(game_Topsoil.Harvest_Action)
@@ -81,6 +100,9 @@ class game_Topsoil():
     def _plant_at(self, coord):
         plant = self._plant_queue.popleft()
         self._garden[coord].plant = plant
+        if plant in game_Topsoil.Timed_Plants: 
+             self._timed_plant_coords.append(coord) 
+             self._garden[coord].timer = game_Topsoil.Timed_Plants[plant]
 
 
     def _harvest_at(self, coord):
@@ -110,10 +132,10 @@ class game_Topsoil():
             self._garden[coord].plant = ' '
             self._garden[coord].soil = next_soil
 
-        # reduce timed TREES
-        for coord in self._timed_plants: 
-            # if timed down to 0, replace with 
-            self._garden.plants[coord] = int(self._garden.plants[coord])-1
+        # reduce timers 
+        for coord in self._timed_plant_coords: 
+            self._garden[coord].timer -= 1
+        self._timed_plant_coords[:] = [x for x in self._timed_plant_coords if not self._garden[x].timer == 0]
 
         # Score
         if (match_plant in game_Topsoil.Basic_Plants):
