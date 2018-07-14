@@ -15,10 +15,15 @@ def group_every(n, iterable):
 
 
 class game_Topsoil():
-    Garden = namedtuple('Garden', 'plants soil')
-    Harvest_Action = 'A'
-    Basic_Plants = ('|','*','w')
+    class Garden_Plot():
+        def __init__(self, plant, soil, timer=0, bird=False):
+            self.plant = plant
+            self.soil = soil
+            self.timer = timer
+            self.bird = bird
 
+    Harvest_Action = 'V'
+    Basic_Plants = ( '|', '*', 'w')
     _soil_cycle = {
         'y': 'g',
         'g': 'b',
@@ -40,7 +45,8 @@ class game_Topsoil():
     def __init__(self, in_garden, in_cur_queue, in_future_queue=[]):
         print(colo.Fore.BLACK + colo.Back.WHITE, end='') # default bg/fg colors -- eventually put this to a seperate output class/method for printing game
 
-        self._garden = game_Topsoil.Garden(plants=list(in_garden[0]), soil=list(in_garden[1]))
+        # ? TODO: starting garden has more complicated starting plots (with birds, with timers)
+        self._garden = [game_Topsoil.Garden_Plot(plant=plant,soil=soil) for plant,soil in zip(in_garden[0],in_garden[1])]
 
         #self._garden_areas = self._init_search_areas()
         self._timed_plants = []
@@ -54,9 +60,9 @@ class game_Topsoil():
     def pprint(self, extras=False, post=''):
         print(self._score)
         print(*self._plant_queue, sep='')
-        for row in zip(*[iter(zip(self._garden.plants, self._garden.soil))]*4):
-            for cell in row:
-                print(game_Topsoil._bg_colors[cell[1]] + cell[0], end='')
+        for row in group_every(4, self._garden):
+            for plot in row: 
+                print(game_Topsoil._bg_colors[plot.soil] + (plot.plant if not plot.timer else str(plot.timer)), end='') 
             print() #newline
         #if extras: print extra info about areas
         print(colo.Back.WHITE + post, end='')
@@ -74,9 +80,7 @@ class game_Topsoil():
 
     def _plant_at(self, coord):
         plant = self._plant_queue.popleft()
-        self._garden.plants[coord] = plant
-        if plant == '3':
-            self._timed_plants.append(coord)
+        self._garden[coord].plant = plant
 
 
     def _harvest_at(self, coord):
@@ -85,9 +89,8 @@ class game_Topsoil():
         self._plant_queue.popleft()
 
         #find contigous area that matches the soil color & plant
-        area = []
-        match_soil  = self._garden.soil[coord]
-        match_plant = self._garden.plants[coord]
+        harvest_area = []
+        match_soil, match_plant = self._garden[coord].soil, self._garden[coord].plant
 
         dfs_stack = [coord]
         visited = set()
@@ -95,18 +98,17 @@ class game_Topsoil():
             cur_coord = dfs_stack.pop()
             if cur_coord in visited: continue
             visited.add(cur_coord)
-            if (   self._garden.soil[cur_coord]   != match_soil 
-                or self._garden.plants[cur_coord] != match_plant): 
-                continue
+            if (self._garden[cur_coord].plant != match_plant 
+             or self._garden[cur_coord].soil  != match_soil ): continue
             
-            area.append(cur_coord)
+            harvest_area.append(cur_coord)
             dfs_stack.extend(game_Topsoil._coord_neighbors[cur_coord])
 
         #'remove' plants & cycle the soil under those plants
         next_soil = game_Topsoil._soil_cycle[match_soil]
-        for coord in area:
-            self._garden.plants[coord] = ' ' ### ? None ?
-            self._garden.soil[coord] = next_soil
+        for coord in harvest_area:
+            self._garden[coord].plant = ' '
+            self._garden[coord].soil = next_soil
 
         # reduce timed TREES
         for coord in self._timed_plants: 
