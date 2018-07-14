@@ -138,9 +138,10 @@ class game_Topsoil():
         self._timed_plant_coords[:] = [x for x in self._timed_plant_coords if not self._garden[x].timer == 0]
 
         # Score
-        if (match_plant in game_Topsoil.Basic_Plants):
-            self._score += ( len(area) * (len(area)+1) ) // 2   # = 1 + 2 + 3 + .. + up to length (size of plant area)
-        #if (match_plant == '') #flower, pine, oak, mushroom
+        score_mod = ( len(harvest_area) * (len(harvest_area)+1) ) // 2   # = 1 + 2 + 3 + .. + up to length (size of plant harvest_area)
+        score_mod *= game_Topsoil._score_mult[match_plant]
+        self._score += score_mod
+        
 
             
         ### |, * 
